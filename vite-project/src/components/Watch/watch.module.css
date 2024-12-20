@@ -1,0 +1,11 @@
+.watch {
+  display: flex;
+  align-items: center;
+  justify-content: space-around;
+  width: 50%;
+  margin: 0 auto;
+}
+.watch p {
+  font-size: 60px;
+  font-weight: bold;
+}

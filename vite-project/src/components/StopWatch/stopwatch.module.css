@@ -1,0 +1,15 @@
+.stopWatch {
+  text-align: center;
+  margin-top: 20px;
+}
+.container {
+  margin-bottom: 20px;
+}
+
+.hours,
+.minutes,
+.seconds {
+  width: 60px;
+  margin-right: 5px;
+  font-size: 1rem;
+}
