@@ -1,81 +1,71 @@
 import { useState, useEffect } from "react";
+import { useSelector, useDispatch } from "react-redux";
+import {
+  updateTime,
+  recordResult,
+  clearTimer,
+} from "../../redux/slices/timerSlice";
 
-const Timer = () => {
-  const [hours, setHours] = useState(0);
-  const [minutes, setMinutes] = useState(1);
-  const [seconds, setSeconds] = useState(0);
+const Stopwatch = () => {
+  const { hours, minutes, seconds, results } = useSelector((state) => state);
+  const dispatch = useDispatch();
   const [isRunning, setIsRunning] = useState(false);
-  const [totalTime, setTotalTime] = useState(60);
 
   useEffect(() => {
     let timerInterval;
 
-    if (isRunning && totalTime > 0) {
+    if (isRunning) {
       timerInterval = setInterval(() => {
-        setTotalTime((prevTime) => prevTime - 1);
+        let totalSeconds = hours * 3600 + minutes * 60 + seconds + 1;
+        dispatch(
+          updateTime({
+            hours: Math.floor(totalSeconds / 3600),
+            minutes: Math.floor((totalSeconds % 3600) / 60),
+            seconds: totalSeconds % 60,
+          })
+        );
       }, 1000);
     }
 
-    if (totalTime === 0) {
-      setIsRunning(false);
-      alert("Time's up!");
-    }
-
     return () => clearInterval(timerInterval);
-  }, [isRunning, totalTime]);
+  }, [isRunning, hours, minutes, seconds, dispatch]);
 
-  const toggleTimer = () => {
-    if (!isRunning) {
-      setTotalTime(hours * 3600 + minutes * 60 + seconds);
-    }
+  const handleStartStop = () => {
     setIsRunning(!isRunning);
   };
 
-  const formatTime = (time) => String(time).padStart(2, "0");
+  const handleRecordLap = () => {
+    dispatch(recordResult());
+  };
 
-  const remainingHours = Math.floor(totalTime / 3600);
-  const remainingMinutes = Math.floor((totalTime % 3600) / 60);
-  const remainingSeconds = totalTime % 60;
+  const handleReset = () => {
+    setIsRunning(false);
+    dispatch(clearTimer());
+  };
 
   return (
-    <div style={{ textAlign: "center", marginTop: "20px" }}>
-      {!isRunning && (
-        <div style={{ marginBottom: "20px" }}>
-          <input
-            type="number"
-            value={hours}
-            onChange={(e) => setHours(Number(e.target.value))}
-            placeholder="HH"
-            style={{ width: "60px", marginRight: "5px", fontSize: "1rem" }}
-          />
-          <input
-            type="number"
-            value={minutes}
-            onChange={(e) => setMinutes(Number(e.target.value))}
-            placeholder="MM"
-            style={{ width: "60px", marginRight: "5px", fontSize: "1rem" }}
-          />
-          <input
-            type="number"
-            value={seconds}
-            onChange={(e) => setSeconds(Number(e.target.value))}
-            placeholder="SS"
-            style={{ width: "60px", fontSize: "1rem" }}
-          />
-        </div>
-      )}
-      <div style={{ fontSize: "2rem", marginBottom: "20px" }}>
-        {formatTime(remainingHours)}:{formatTime(remainingMinutes)}:
-        {formatTime(remainingSeconds)}
+    <div style={{ textAlign: "center" }}>
+      <div style={{ fontSize: "2rem" }}>
+        {String(hours).padStart(2, "0")}:{String(minutes).padStart(2, "0")}:
+        {String(seconds).padStart(2, "0")}
       </div>
-      <button
-        onClick={toggleTimer}
-        style={{ fontSize: "1rem", padding: "10px 20px" }}
-      >
-        {isRunning ? "Pause" : "Start"}
+      <button onClick={handleStartStop}>{isRunning ? "Stop" : "Start"}</button>
+      <button onClick={handleRecordLap} disabled={!isRunning}>
+        Lap
       </button>
+      <button onClick={handleReset}>Reset</button>
+      <div>
+        <h3>Past Measurements:</h3>
+        <ul>
+          {results.map((result, index) => (
+            <li style={{ listStyleType: "none" }} key={index}>
+              {result}
+            </li>
+          ))}
+        </ul>
+      </div>
     </div>
   );
 };
 
-export default Timer;
+export default Stopwatch;
